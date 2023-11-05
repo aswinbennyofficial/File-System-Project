@@ -10,7 +10,9 @@ typedef struct {
 } FileEntry;
 
 FileEntry file_table[MAX_FILES]; // Array to store file data
-int storage_space = 1000000;     // variablr to store partition storage default is set to this
+int storage_space;     // variablr to store partition storage default is set to this
+
+int partition_size; //used to store the size of partition
 
 // Function to calculate and display disk utilization
 void showDiskUtilization() {
@@ -18,7 +20,7 @@ void showDiskUtilization() {
     for (int i = 0; i < MAX_FILES; i++) {
         used_space += file_table[i].file_size;
     }
-    printf("\nDisk Utilization: %d KB used. Remaining size is %d KB\n", used_space, storage_space);
+    printf("\nDisk Utilization: %d KB used out of %d KB. Remaining size is %d KB \n", used_space,partition_size,storage_space);
 }
 
 // Function to display all existing files and their sizes
@@ -118,7 +120,10 @@ int main() {
     printf("\nWelcome to the File System..\n");
 
     printf("\nEnter the storage size to allocate for this partition in KBs: ");
-    scanf("%d", &storage_space);
+    scanf("%d", &partition_size);
+    storage_space=partition_size;
+
+
 
     while (1) {
         printf("\nMenu:\n");
