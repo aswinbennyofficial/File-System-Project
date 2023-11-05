@@ -36,15 +36,15 @@ void createFile() {
     char filename[FILENAME_SIZE];
     int file_size;
 
-    printf("Enter the filename: ");
+    printf("\nEnter the filename: ");
     scanf("%s", filename);
 
     if (strlen(filename) > FILENAME_SIZE) {
-        printf("Filename is too long. Maximum length is %d characters.\n", FILENAME_SIZE);
+        printf("\nFilename is too long. Maximum length is %d characters.\n", FILENAME_SIZE);
         return;
     }
 
-    printf("Enter the file size (KB): ");
+    printf("\nEnter the file size (KB): ");
     scanf("%d", &file_size);
 
     if (file_size <= 0) {
@@ -53,7 +53,7 @@ void createFile() {
     }
 
     if (storage_space - file_size < 0) {
-        printf("Not enough space to create the file.\n");
+        printf("\nNot enough space to create the file.\n");
         return;
     }
 
@@ -62,12 +62,12 @@ void createFile() {
             strcpy(file_table[i].filename, filename);
             file_table[i].file_size = file_size;
             storage_space -= file_size;
-            printf("File '%s' created with size %d KB.\n", filename, file_size);
+            printf("\nFile '%s' created with size %d KB.\n", filename, file_size);
             return;
         }
     }
 
-    printf("File limit reached. Cannot create more files.\n");
+    printf("\nFile limit reached. Cannot create more files.\n");
 }
 
 // Function to delete a file
@@ -81,11 +81,11 @@ void deleteFile() {
             storage_space += file_table[i].file_size;
             file_table[i].file_size = 0;
             strcpy(file_table[i].filename, "");
-            printf("File '%s' deleted.\n", filename);
+            printf("\nFile '%s' deleted.\n", filename);
             return;
         }
     }
-    printf("File '%s' not found. Deletion failed.\n", filename);
+    printf("\nFile '%s' not found. Deletion failed.\n", filename);
 }
 
 // Function to rename a file
@@ -93,31 +93,31 @@ void renameFile() {
     char old_filename[FILENAME_SIZE];
     char new_filename[FILENAME_SIZE];
 
-    printf("Enter the current filename: ");
+    printf("\nEnter the current filename: ");
     scanf("%s", old_filename);
 
     for (int i = 0; i < MAX_FILES; i++) {
         if (strcmp(file_table[i].filename, old_filename) == 0) {
-            printf("Enter the new filename: ");
+            printf("\nEnter the new filename: ");
             scanf("%s", new_filename);
             if (strlen(new_filename) > FILENAME_SIZE) {
-                printf("New filename is too long. Maximum length is %d characters.\n", FILENAME_SIZE);
+                printf("\nNew filename is too long. Maximum length is %d characters.\n", FILENAME_SIZE);
                 return;
             }
             strcpy(file_table[i].filename, new_filename);
-            printf("File '%s' renamed to '%s'.\n", old_filename, new_filename);
+            printf("\nFile '%s' renamed to '%s'.\n", old_filename, new_filename);
             return;
         }
     }
-    printf("File '%s' not found. Renaming failed.\n", old_filename);
+    printf("\nFile '%s' not found. Renaming failed.\n", old_filename);
 }
 
 int main() {
     int choice;
 
-    printf("Welcome to the Storage Space Management System\n");
+    printf("\nWelcome to the File System..\n");
 
-    printf("Enter the storage size to allocate for this partition in KBs: ");
+    printf("\nEnter the storage size to allocate for this partition in KBs: ");
     scanf("%d", &storage_space);
 
     while (1) {
