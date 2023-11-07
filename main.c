@@ -1,35 +1,40 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#define MAX_FILES 100
 #define FILENAME_SIZE 128
 
-typedef struct {
-    char filename[FILENAME_SIZE];
+typedef struct FileEntry {
+    char* filename;
     int file_size;
+    struct FileEntry* next;
 } FileEntry;
 
-FileEntry file_table[MAX_FILES]; // Array to store file data
-int storage_space;     // variablr to store partition storage default is set to this
-
-int partition_size; //used to store the size of partition
+FileEntry* file_table = NULL;
+int storage_space;     // variable to store partition storage default is set to this
+int partition_size; // used to store the size of partition
 
 // Function to calculate and display disk utilization
 void showDiskUtilization() {
     int used_space = 0;
-    for (int i = 0; i < MAX_FILES; i++) {
-        used_space += file_table[i].file_size;
+    FileEntry* current = file_table;
+
+    while (current != NULL) {
+        used_space += current->file_size;
+        current = current->next;
     }
-    printf("\nDisk Utilization: %d KB used out of %d KB. Remaining size is %d KB \n", used_space,partition_size,storage_space);
+
+    printf("\nDisk Utilization: %d KB used out of %d KB. Remaining size is %d KB\n", used_space, partition_size, storage_space);
 }
 
 // Function to display all existing files and their sizes
 void showAllFiles() {
     printf("\nExisting Files:\n");
-    for (int i = 0; i < MAX_FILES; i++) {
-        if (file_table[i].file_size > 0) {
-            printf("File: %s, Size: %d KB\n", file_table[i].filename, file_table[i].file_size);
-        }
+    FileEntry* current = file_table;
+
+    while (current != NULL) {
+        printf("File: %s, Size: %d KB\n", current->filename, current->file_size);
+        current = current->next;
     }
 }
 
@@ -59,17 +64,23 @@ void createFile() {
         return;
     }
 
-    for (int i = 0; i < MAX_FILES; i++) {
-        if (file_table[i].file_size == 0) {
-            strcpy(file_table[i].filename, filename);
-            file_table[i].file_size = file_size;
-            storage_space -= file_size;
-            printf("\nFile '%s' created with size %d KB.\n", filename, file_size);
-            return;
+    FileEntry* new_entry = (FileEntry*)malloc(sizeof(FileEntry));
+    new_entry->filename = strdup(filename); //makes a new dynamically allocated string taht is copy of filename
+    new_entry->file_size = file_size;
+    new_entry->next = NULL;
+
+    if (file_table == NULL) {
+        file_table = new_entry;
+    } else {
+        FileEntry* current = file_table;
+        while (current->next != NULL) {
+            current = current->next;
         }
+        current->next = new_entry;
     }
 
-    printf("\nFile limit reached. Cannot create more files.\n");
+    storage_space -= file_size;
+    printf("\nFile '%s' created with size %d KB.\n", filename, file_size);
 }
 
 // Function to delete a file
@@ -78,15 +89,30 @@ void deleteFile() {
     printf("Enter the filename to delete: ");
     scanf("%s", filename);
 
-    for (int i = 0; i < MAX_FILES; i++) {
-        if (strcmp(file_table[i].filename, filename) == 0) {
-            storage_space += file_table[i].file_size;
-            file_table[i].file_size = 0;
-            strcpy(file_table[i].filename, "");
+    FileEntry* current = file_table;
+    FileEntry* prev = NULL;
+
+    while (current != NULL) {
+        if (strcmp(current->filename, filename) == 0) {
+            storage_space += current->file_size;
+
+            if (prev == NULL) {
+                // If the first entry is to be deleted
+                file_table = current->next;
+            } else {
+                prev->next = current->next;
+            }
+
+            free(current->filename);
+            free(current);
             printf("\nFile '%s' deleted.\n", filename);
             return;
         }
+
+        prev = current;
+        current = current->next;
     }
+
     printf("\nFile '%s' not found. Deletion failed.\n", filename);
 }
 
@@ -98,19 +124,27 @@ void renameFile() {
     printf("\nEnter the current filename: ");
     scanf("%s", old_filename);
 
-    for (int i = 0; i < MAX_FILES; i++) {
-        if (strcmp(file_table[i].filename, old_filename) == 0) {
+    FileEntry* current = file_table;
+
+    while (current != NULL) {
+        if (strcmp(current->filename, old_filename) == 0) {
             printf("\nEnter the new filename: ");
             scanf("%s", new_filename);
+
             if (strlen(new_filename) > FILENAME_SIZE) {
                 printf("\nNew filename is too long. Maximum length is %d characters.\n", FILENAME_SIZE);
                 return;
             }
-            strcpy(file_table[i].filename, new_filename);
+
+            free(current->filename);
+            current->filename = strdup(new_filename); //strdup dynamically allocates memmory of string with copy of file name
             printf("\nFile '%s' renamed to '%s'.\n", old_filename, new_filename);
             return;
         }
+
+        current = current->next;
     }
+
     printf("\nFile '%s' not found. Renaming failed.\n", old_filename);
 }
 
@@ -121,9 +155,7 @@ int main() {
 
     printf("\nEnter the storage size to allocate for this partition in KBs: ");
     scanf("%d", &partition_size);
-    storage_space=partition_size;
-
-
+    storage_space = partition_size;
 
     while (1) {
         printf("\nMenu:\n");
@@ -153,10 +185,13 @@ int main() {
                 renameFile();
                 break;
             case 6:
-                printf("Exiting the program.\n");
+                printf("Exiting program.\n");
                 return 0;
             default:
-                printf("Invalid choice. Please select a valid option.\n");
+                printf("Invalid choice..\n");
         }
     }
+
+
+    return 0;
 }
